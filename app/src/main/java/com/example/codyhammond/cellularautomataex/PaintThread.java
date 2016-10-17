@@ -23,7 +23,7 @@ public class PaintThread implements Runnable {
     private SurfaceHolder surfaceHolder;
     private Canvas BuffCanvas;
     private Grid cellGrid;
-    private HashMap<String,Integer>map=new HashMap<>();
+
     private Bitmap buffCanvasBitmap;
     private final int cellSizeinPixels;
 
@@ -31,7 +31,6 @@ public class PaintThread implements Runnable {
     {
         point=new Point();
         paint=new Paint();
-        map.put("Hello",1);
         this.surfaceHolder=surfaceHolder;
         display.getSize(point);
         buffCanvasBitmap = Bitmap.createBitmap(point.x, point.y, Bitmap.Config.ARGB_8888);
