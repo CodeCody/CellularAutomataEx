@@ -1,8 +1,15 @@
-package com.example.codyhammond.cellularautomataex;
+package com.example.codyhammond.cellularautomataex.Grid;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.view.SurfaceHolder;
+
+import com.example.codyhammond.cellularautomataex.CellStateChange;
+import com.example.codyhammond.cellularautomataex.PaintRunnable;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -11,14 +18,100 @@ import java.util.List;
  * Created by codyhammond on 10/13/16.
  */
 
-public class GameOfLifeGrid extends Grid {
+public class GameOfLifeGrid extends Grid implements PaintRunnable {
 
     private List<CellStateChange>cellStateChanges;
-    public GameOfLifeGrid(int y,int x)
+    private SurfaceHolder surfaceHolder;
+    private Canvas BuffCanvas;
+    private Bitmap buffCanvasBitmap;
+    private Paint paint;
+    private Point screenDimen;
+    public GameOfLifeGrid(Point point, SurfaceHolder surfaceHolder)
     {
-        super(y,x);
+        super(point.y,point.x,getOptimalCellSize(point));
+        screenDimen=point;
         cellStateChanges=new LinkedList<>();
+        this.surfaceHolder=surfaceHolder;
+        initCanvas();
         setStartPattern();
+    }
+
+    private void initCanvas()
+    {
+        paint=new Paint();
+        buffCanvasBitmap = Bitmap.createBitmap(screenDimen.x, screenDimen.y, Bitmap.Config.ARGB_8888);
+        BuffCanvas=new Canvas();
+        BuffCanvas.setBitmap(buffCanvasBitmap);
+        initializeGridColor();
+    }
+
+
+    private static int getOptimalCellSize(Point displaySize) {
+        int cellSize = 1;
+        int limitX = 160;
+        int limitY = 200;
+
+
+
+        while (displaySize.x / cellSize > limitX || displaySize.y / cellSize > limitY) {
+            cellSize++;
+        }
+
+
+            return cellSize;
+
+    }
+
+    @Override
+    public synchronized void run() {
+        Canvas canvas;
+
+        try {
+            while (!Thread.currentThread().isInterrupted()) {
+
+                updateGrid();
+                draw();
+                canvas = surfaceHolder.lockCanvas();
+                canvas.drawBitmap(buffCanvasBitmap, 0, 0, null);
+                surfaceHolder.unlockCanvasAndPost(canvas);
+
+            }
+        }catch(NullPointerException e )
+        {
+
+        }
+
+    }
+
+    @Override
+    public void draw()
+    {
+                for( CellStateChange csc : cellStateChanges)
+                {
+                    paintCell(csc.getX(),csc.getY(),csc.getStatus());
+                }
+                cellStateChanges.clear();
+    }
+
+
+    private void paintCell(int i, int j,int CellStatus) {
+        Point p = new Point(i,j);
+        int x = p.x;
+        int y = p.y;
+        int color= Color.BLACK;
+
+        if(CellStatus==1)
+            color=Color.CYAN;
+
+        paint.setColor(color);
+        Rect rect = new Rect(
+                x * cellSizeinPixels,
+                y * cellSizeinPixels,
+                (x + 1) * cellSizeinPixels,
+                (y + 1) * cellSizeinPixels
+        );
+
+        BuffCanvas.drawRect(rect, paint);
     }
 
     @Override
@@ -105,6 +198,7 @@ public class GameOfLifeGrid extends Grid {
     {
         return cellStateChanges;
     }
+
     @Override
     public void setStartPattern()
     {
@@ -117,6 +211,16 @@ public class GameOfLifeGrid extends Grid {
         }
     }
 
+    private void initializeGridColor()
+    {
+        for(int j=0; j < getHeight(); j++)
+        {
+            for(int i=0; i < getWidth(); i++)
+            {
+                paintCell(i,j,grid[j][i]);
+            }
+        }
+    }
 
 
 

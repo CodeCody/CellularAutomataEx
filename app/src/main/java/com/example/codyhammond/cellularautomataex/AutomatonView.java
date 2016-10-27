@@ -2,14 +2,17 @@ package com.example.codyhammond.cellularautomataex;
 
 import android.content.Context;
 import android.graphics.Point;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import com.example.codyhammond.cellularautomataex.Fractals.Circles;
+import com.example.codyhammond.cellularautomataex.Fractals.Fractal;
+import com.example.codyhammond.cellularautomataex.Grid.GameOfLifeGrid;
+import com.example.codyhammond.cellularautomataex.Grid.Grid;
+import com.example.codyhammond.cellularautomataex.Grid.OneDCellularAutomataGrid;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,22 +24,23 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
 {
     private Display display;
     private ExecutorService executorService=null;
-    private PaintThread paintThread;
+   // private PaintThread paintThread;
     private Point point;
     private int choice=0;
     private Grid cellGrid;
+    private Fractal fractal;
     private SurfaceHolder surfaceHolder;
-    AutomatonView(Context context)
+    public AutomatonView(Context context)
     {
         super(context);
     }
 
-    AutomatonView(Context context, AttributeSet attributeSet)
+    public AutomatonView(Context context, AttributeSet attributeSet)
     {
         super(context,attributeSet);
     }
 
-    AutomatonView(Context context,AttributeSet attributeSet,int defstyleAttr)
+    public AutomatonView(Context context,AttributeSet attributeSet,int defstyleAttr)
     {
         super(context,attributeSet,defstyleAttr);
     }
@@ -48,6 +52,7 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
         surfaceHolder=getHolder();
         point=new Point();
     }
+
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
@@ -62,36 +67,58 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     public void startThread()
     {
         executorService = Executors.newSingleThreadExecutor();
-        paintThread=new PaintThread(display,cellGrid,surfaceHolder);
-        executorService.execute(paintThread);
-    }
-    public void setNewGrid(int i)
-    {
-        executorService.shutdown();
-        executorService.shutdownNow();
-        choice=i;
-        setNewGrid();
-        refresh();
+        if(choice == 0) {
+            executorService.execute((OneDCellularAutomataGrid)cellGrid);
+        }
+        else if(choice == 1 )
+        {
+            executorService.execute((GameOfLifeGrid)cellGrid);
+        }
+        else
+        {
+
+        }
     }
 
-    private void refresh()
+    public void setNewGridMode(int selection)
     {
-      //  executorService.shutdownNow();
+        if(selection == choice)
+            return;
+
+        shutDownPaintThread();
+        choice=selection;
+        setNewGrid();
         startThread();
     }
 
+    public void shutDownPaintThread()
+    {
+        executorService.shutdown();
+        executorService.shutdownNow();
+    }
+    public void setNewRule(String rule)
+    {
+        shutDownPaintThread();
+        int size=getOptimalCellSize(point,false,choice);
+        cellGrid=new OneDCellularAutomataGrid(point,rule,surfaceHolder);
+        cellGrid.setPixelSize(size);
+        startThread();
+    }
+
+
     private void setNewGrid()
     {
-        int size=getOptimalCellSize(point,false,choice);
        if(Category.OneDCellularAutomata.ordinal() == choice)
        {
-          cellGrid=new OneDCellularAutomataGrid(point.y/size,point.x/size);
-           cellGrid.setPixelSize(size);
+          cellGrid=new OneDCellularAutomataGrid(point,surfaceHolder);
        }
         else if(Category.GameOfLife.ordinal() == choice)
        {
-           cellGrid=new GameOfLifeGrid(point.y/size,point.x/size);
-           cellGrid.setPixelSize(size);
+           cellGrid=new GameOfLifeGrid(point,surfaceHolder);
+       }
+        else if(Category.Fractals.ordinal() == choice)
+       {
+           fractal=new Circles(point,surfaceHolder);
        }
     }
 
@@ -129,8 +156,14 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
-        executorService.shutdown();
+
     }
 
+    @Override
+    public void onDetachedFromWindow()
+    {
+        super.onDetachedFromWindow();
+        shutDownPaintThread();
+    }
 
 }

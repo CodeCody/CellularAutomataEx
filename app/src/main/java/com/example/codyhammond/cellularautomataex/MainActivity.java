@@ -1,34 +1,33 @@
 package com.example.codyhammond.cellularautomataex;
 
 import android.content.Context;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import static android.R.attr.factor;
-import static android.R.attr.id;
+import com.example.codyhammond.cellularautomataex.Grid.Grid;
+import com.example.codyhammond.cellularautomataex.Grid.OneDCellularAutomataGrid;
+import com.example.codyhammond.cellularautomataex.RuleSets.Ruleset;
 
 public class MainActivity extends AppCompatActivity  {
 
     private AutomatonView automatonView;
-    private PaintThread paintThread;
+   // private PaintThread paintThread;
     private DrawerLayout drawerLayout;
-    private ListView categoryListView;
+    private ListView categoryListView,optionsListView;
     private Grid cellGrid;
     private Toolbar toolbar;
     private TextView categoryTitle;
@@ -49,11 +48,32 @@ public class MainActivity extends AppCompatActivity  {
         categoryTitle=(TextView)findViewById(R.id.category_title);
         drawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
         categoryListView=(ListView)findViewById(R.id.category_list);
+        optionsListView=(ListView)findViewById(R.id.optionsList);
+
+        optionsListView.setAdapter(new OptionsAdapter(this,R.layout.options_list_item, Ruleset.ruleSetNames));
+
+        optionsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                optionsListView.setVisibility(View.GONE);
+                automatonView.setNewRule(Ruleset.ruleSetNames[i]);
+            }
+        });
+
+        optionsListView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                Log.i("FocusChange",String.valueOf(b));
+            }
+        });
+
+       // optionsListView.
+
         categoryListView.setAdapter(new CategoryAdapter(this,R.layout.category_list_item,categories));
         categoryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                     automatonView.setNewGrid(i);
+                     automatonView.setNewGridMode(i);
                 drawerLayout.closeDrawer(GravityCompat.START,true);
                 categoryTitle.setText(categories[i]);
             }
@@ -79,10 +99,21 @@ public class MainActivity extends AppCompatActivity  {
             @Override
             public void onClick(View view) {
 
+               optionsListView.setVisibility(View.VISIBLE);
             }
         });
 
         automatonView=(AutomatonView)findViewById(R.id.automataview);
+
+
+        automatonView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+               optionsListView.setVisibility(View.GONE);
+                return false;
+            }
+        });
+
 
         Display display=getWindowManager().getDefaultDisplay();
         automatonView.init(display);
@@ -116,6 +147,37 @@ public class MainActivity extends AppCompatActivity  {
         public int getCount()
         {
             return categories.length;
+        }
+    }
+
+    class OptionsAdapter extends ArrayAdapter<String>
+    {
+        public OptionsAdapter(Context context,int id,String[] list)
+        {
+            super(context,id,list);
+        }
+
+
+        @Override @NonNull
+        public View getView(int position, View convertView, @NonNull ViewGroup parent)
+        {
+            if(convertView==null)
+            {
+                convertView=getLayoutInflater().inflate(R.layout.options_list_item,null);
+            }
+
+            TextView textView=(TextView)convertView.findViewById(R.id.option_name);
+            textView.setText(Ruleset.ruleSetNames[position]);
+
+           // RadioButton radioButton=(RadioButton)convertView.findViewById(R.id.selectOption);
+
+            return convertView;
+        }
+
+        @Override
+        public int getCount()
+        {
+            return Ruleset.ruleSetNames.length;
         }
     }
 }
