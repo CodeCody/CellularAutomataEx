@@ -18,7 +18,7 @@ import java.util.List;
  * Created by codyhammond on 10/13/16.
  */
 
-public class GameOfLifeGrid extends Grid implements PaintRunnable {
+public class GameOfLifeGrid implements PaintRunnable,Grid {
 
     private List<CellStateChange>cellStateChanges;
     private SurfaceHolder surfaceHolder;
@@ -26,9 +26,12 @@ public class GameOfLifeGrid extends Grid implements PaintRunnable {
     private Bitmap buffCanvasBitmap;
     private Paint paint;
     private Point screenDimen;
+    private int grid[][];
+    private int cellSizeinPixels=0;
     public GameOfLifeGrid(Point point, SurfaceHolder surfaceHolder)
     {
-        super(point.y,point.x,getOptimalCellSize(point));
+        cellSizeinPixels=getOptimalCellSize(point);
+        grid=new int[point.y/cellSizeinPixels][point.x/cellSizeinPixels];
         screenDimen=point;
         cellStateChanges=new LinkedList<>();
         this.surfaceHolder=surfaceHolder;
@@ -45,8 +48,8 @@ public class GameOfLifeGrid extends Grid implements PaintRunnable {
         initializeGridColor();
     }
 
-
-    private static int getOptimalCellSize(Point displaySize) {
+    @Override
+       public int getOptimalCellSize(Point displaySize) {
         int cellSize = 1;
         int limitX = 160;
         int limitY = 200;
@@ -58,8 +61,8 @@ public class GameOfLifeGrid extends Grid implements PaintRunnable {
         }
 
 
-            return cellSize;
 
+        return cellSize;
     }
 
     @Override
@@ -86,11 +89,11 @@ public class GameOfLifeGrid extends Grid implements PaintRunnable {
     @Override
     public void draw()
     {
-                for( CellStateChange csc : cellStateChanges)
-                {
-                    paintCell(csc.getX(),csc.getY(),csc.getStatus());
-                }
-                cellStateChanges.clear();
+        for( CellStateChange csc : cellStateChanges)
+        {
+            paintCell(csc.getX(),csc.getY(),csc.getStatus());
+        }
+        cellStateChanges.clear();
     }
 
 
@@ -222,6 +225,15 @@ public class GameOfLifeGrid extends Grid implements PaintRunnable {
         }
     }
 
+    private int getHeight()
+    {
+        return grid.length;
+    }
+
+    private int getWidth()
+    {
+        return grid[0].length;
+    }
 
 
 }

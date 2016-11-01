@@ -14,11 +14,13 @@ import com.example.codyhammond.cellularautomataex.Grid.Grid;
 import com.example.codyhammond.cellularautomataex.PaintRunnable;
 import com.example.codyhammond.cellularautomataex.RuleSets.Ruleset;
 
+import java.util.Arrays;
+
 /**
  * Created by codyhammond on 10/13/16.
  */
 
-public class OneDCellularAutomataGrid extends Grid implements PaintRunnable {
+public class OneDCellularAutomataGrid implements Grid,PaintRunnable {
 
     private int currentRow=0;
     private boolean isChaotic=false;
@@ -30,20 +32,30 @@ public class OneDCellularAutomataGrid extends Grid implements PaintRunnable {
     private static String ruleSelection="Rule 90";
     public static final int TYPE_ID=0;
     private Bitmap buffCanvasBitmap;
+    private int[] oneDarray;
+    private int[] bufferArray;
+    private int adjustedHeight=0;
+    private int cellSizeinPixels=0;
 
 
     public OneDCellularAutomataGrid(Point point, SurfaceHolder surfaceHolder)
     {
-        super(point.y,point.x,getOptimalCellSize(point));
+        cellSizeinPixels=getOptimalCellSize(point);
+        oneDarray=new int[point.x/cellSizeinPixels];
+        adjustedHeight=point.y/cellSizeinPixels;
         screenDimen=point;
         this.surfaceHolder=surfaceHolder;
         initCanvas();
         setStartPattern();
+
     }
 
     public OneDCellularAutomataGrid(Point point,String rule,SurfaceHolder surfaceHolder)
     {
-        super(point.y,point.x,getOptimalCellSize(point));
+        cellSizeinPixels=getOptimalCellSize(point);
+        oneDarray=new int[point.x/cellSizeinPixels];
+        bufferArray=new int[oneDarray.length];
+        adjustedHeight=point.y/cellSizeinPixels;
         ruleSelection=rule;
         isChaotic=rule.contains("Chaotic");
         this.surfaceHolder=surfaceHolder;
@@ -62,7 +74,8 @@ public class OneDCellularAutomataGrid extends Grid implements PaintRunnable {
         initializeGridColor();
     }
 
-    private static int getOptimalCellSize(Point displaySize) {
+    @Override
+    public int getOptimalCellSize(Point displaySize) {
         int cellSize = 1;
         int limitX = 160;
         int limitY = 200;
@@ -85,29 +98,33 @@ public class OneDCellularAutomataGrid extends Grid implements PaintRunnable {
     @Override
     public void updateGrid()
     {
-        for (int i = 1; i < grid[0].length-1; i++)
+        bufferArray=oneDarray.clone();
+        for (int i = 1; i < getWidth()-1; i++)
         {
-            int left = grid[currentRow][i - 1];
-            int middle = grid[currentRow][i];
-            int right = grid[currentRow][i + 1];
+            int left = bufferArray[i - 1];
+            int middle = bufferArray[i];
+            int right = bufferArray[i + 1];
             int newstate = rules(left, middle, right);
-            if (currentRow + 1 < grid.length)
-                grid[currentRow + 1][i] = newstate;
+            if (currentRow + 1 < getHeight())
+                oneDarray[i] = newstate;
         }
+
         currentRow++;
     }
 
-
-    public void restartGrid()
+    private int getWidth()
     {
-        for(int i=0; i < grid.length; i++)
-        {
-            for(int j=0; j < grid[0].length;j++)
-            {
-                grid[i][j]=0;
-            }
-        }
+        return oneDarray.length;
+    }
 
+    private int getHeight()
+    {
+        return adjustedHeight;
+    }
+
+    private void restartGrid()
+    {
+        Arrays.fill(oneDarray,0);
         setStartPattern();
         currentRow=0;
     }
@@ -116,12 +133,12 @@ public class OneDCellularAutomataGrid extends Grid implements PaintRunnable {
     public void setStartPattern()
     {
         if(!isChaotic) {
-            grid[0][grid[0].length / 2] = 1;
+            oneDarray[oneDarray.length / 2] = 1;
         }
         else {
-            for(int i=0; i < grid[0].length; i++)
+            for(int i=0; i < getWidth(); i++)
             {
-                grid[0][i]=(Math.random() < 0.5) ? 0 : 1;
+                oneDarray[i]=(Math.random() < 0.5) ? 0 : 1;
             }
         }
     }
@@ -148,6 +165,7 @@ public class OneDCellularAutomataGrid extends Grid implements PaintRunnable {
                         }
                     }
                 }
+            initializeGridColor();
         }
         catch(NullPointerException  e)
         {
@@ -162,7 +180,7 @@ public class OneDCellularAutomataGrid extends Grid implements PaintRunnable {
         try {
              {
                 for (int i = 0; i < getWidth(); i++) {
-                    paintCell(i, currentRow, grid[currentRow][i]);
+                    paintCell(i, currentRow, oneDarray[i]);
                 }
             }
         }
@@ -178,7 +196,7 @@ public class OneDCellularAutomataGrid extends Grid implements PaintRunnable {
         {
             for(int i=0; i < getWidth(); i++)
             {
-                paintCell(i,j,grid[j][i]);
+                paintCell(i,j,0);
             }
         }
     }
@@ -220,7 +238,7 @@ public class OneDCellularAutomataGrid extends Grid implements PaintRunnable {
     }
 
 
-    public int rules5(int a,int b,int c,int d,int e)
+ /*   public int rules5(int a,int b,int c,int d,int e)
     {
         if     (a==1 && b==1 && c==1 && d==1 && e==1) return ruleset5[31];//31
 
@@ -288,6 +306,6 @@ public class OneDCellularAutomataGrid extends Grid implements PaintRunnable {
 
         return 0;
     }
-       //rule 30 {1,0,1,1,1,1,1,0}; //rule 222{1,1,0,1,1,1,1,0}; // rule 90{0,1,0,1,1,0,1,0};
+       //rule 30 {1,0,1,1,1,1,1,0}; //rule 222{1,1,0,1,1,1,1,0}; // rule 90{0,1,0,1,1,0,1,0}; */
 
 }

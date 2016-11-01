@@ -22,6 +22,9 @@ import com.example.codyhammond.cellularautomataex.Grid.Grid;
 import com.example.codyhammond.cellularautomataex.Grid.OneDCellularAutomataGrid;
 import com.example.codyhammond.cellularautomataex.RuleSets.Ruleset;
 
+import static com.example.codyhammond.cellularautomataex.Options.fractalAndChaosOptions;
+import static com.example.codyhammond.cellularautomataex.Options.ruleSetNames;
+
 public class MainActivity extends AppCompatActivity  {
 
     private AutomatonView automatonView;
@@ -30,11 +33,11 @@ public class MainActivity extends AppCompatActivity  {
     private ListView categoryListView,optionsListView;
     private Grid cellGrid;
     private Toolbar toolbar;
-    private TextView categoryTitle;
+    private TextView categoryTitle,subCategoryTitle;
     private ImageButton menu_drawer;
     private ImageButton optionsButton;
     private int currentSelection=0;
-    private final String[] categories={"1D Cellular Automata","Game Of Life","Fractals"};
+    private final String[] categories={"1D Cellular Automata","Game Of Life","Fractals And Chaos"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,17 +49,26 @@ public class MainActivity extends AppCompatActivity  {
         menu_drawer=(ImageButton)findViewById(R.id.menu_drawer);
         optionsButton=(ImageButton)findViewById(R.id.options);
         categoryTitle=(TextView)findViewById(R.id.category_title);
+        subCategoryTitle=(TextView)findViewById(R.id.sub_category_title);
         drawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
         categoryListView=(ListView)findViewById(R.id.category_list);
         optionsListView=(ListView)findViewById(R.id.optionsList);
 
-        optionsListView.setAdapter(new OptionsAdapter(this,R.layout.options_list_item, Ruleset.ruleSetNames));
+        optionsListView.setAdapter(new OptionsAdapter(this,R.layout.options_list_item, ruleSetNames));
 
         optionsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 optionsListView.setVisibility(View.GONE);
-                automatonView.setNewRule(Ruleset.ruleSetNames[i]);
+                if(categoryTitle.getText().equals(categories[0])) {
+                    automatonView.setNewRule(ruleSetNames[i]);
+                    subCategoryTitle.setText(ruleSetNames[i]);
+                }
+                else if(categoryTitle.getText().equals(categories[2]))
+                {
+                    automatonView.setNewFractalChaos(i);
+                    subCategoryTitle.setText(fractalAndChaosOptions[i]);
+                }
             }
         });
 
@@ -73,13 +85,26 @@ public class MainActivity extends AppCompatActivity  {
         categoryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                     automatonView.setNewGridMode(i);
+                     automatonView.setNewSurfaceMode(i);
+                if( i == 0) {
+                    optionsListView.setAdapter(new OptionsAdapter(getApplicationContext(), R.layout.options_list_item, Options.ruleSetNames));
+                    subCategoryTitle.setText(ruleSetNames[0]);
+                }
+                else if( i == 1) {
+                    optionsListView.setAdapter(new OptionsAdapter(getApplicationContext(), R.layout.options_list_item, Options.gameOfLifeOptions));
+                    subCategoryTitle.setVisibility(View.GONE);
+                }
+                else {
+                    optionsListView.setAdapter(new OptionsAdapter(getApplicationContext(), R.layout.options_list_item, Options.fractalAndChaosOptions));
+                    subCategoryTitle.setText(fractalAndChaosOptions[0]);
+                }
                 drawerLayout.closeDrawer(GravityCompat.START,true);
                 categoryTitle.setText(categories[i]);
             }
         });
 
         categoryTitle.setText(categories[0]);
+        subCategoryTitle.setText(ruleSetNames[4]);
 
         menu_drawer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,9 +177,11 @@ public class MainActivity extends AppCompatActivity  {
 
     class OptionsAdapter extends ArrayAdapter<String>
     {
+        private String[]list;
         public OptionsAdapter(Context context,int id,String[] list)
         {
             super(context,id,list);
+            this.list=list;
         }
 
 
@@ -167,7 +194,7 @@ public class MainActivity extends AppCompatActivity  {
             }
 
             TextView textView=(TextView)convertView.findViewById(R.id.option_name);
-            textView.setText(Ruleset.ruleSetNames[position]);
+            textView.setText(list[position]);
 
            // RadioButton radioButton=(RadioButton)convertView.findViewById(R.id.selectOption);
 
@@ -177,7 +204,7 @@ public class MainActivity extends AppCompatActivity  {
         @Override
         public int getCount()
         {
-            return Ruleset.ruleSetNames.length;
+            return list.length;
         }
     }
 }

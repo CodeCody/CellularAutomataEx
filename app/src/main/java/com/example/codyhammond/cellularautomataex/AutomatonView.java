@@ -8,8 +8,11 @@ import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.example.codyhammond.cellularautomataex.Fractals.AizawaAttractor;
 import com.example.codyhammond.cellularautomataex.Fractals.Circles;
-import com.example.codyhammond.cellularautomataex.Fractals.Fractal;
+import com.example.codyhammond.cellularautomataex.Fractals.FractalandChaos;
+import com.example.codyhammond.cellularautomataex.Fractals.LorenzAttractor;
+import com.example.codyhammond.cellularautomataex.Fractals.RosslerAttractor;
 import com.example.codyhammond.cellularautomataex.Grid.GameOfLifeGrid;
 import com.example.codyhammond.cellularautomataex.Grid.Grid;
 import com.example.codyhammond.cellularautomataex.Grid.OneDCellularAutomataGrid;
@@ -28,7 +31,7 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     private Point point;
     private int choice=0;
     private Grid cellGrid;
-    private Fractal fractal;
+    private FractalandChaos fractalandChaos;
     private SurfaceHolder surfaceHolder;
     public AutomatonView(Context context)
     {
@@ -58,7 +61,7 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     {
         Log.i("AutomatonView","surfaceCreated");
         display.getSize(point);
-        setNewGrid();
+        setNewSurface();
         startThread();
 
        // paintThread.start();
@@ -76,37 +79,56 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
         }
         else
         {
-
+           executorService.execute(fractalandChaos);
         }
     }
 
-    public void setNewGridMode(int selection)
+    public void setNewSurfaceMode(int selection)
     {
         if(selection == choice)
             return;
 
         shutDownPaintThread();
         choice=selection;
-        setNewGrid();
+        setNewSurface();
         startThread();
     }
 
     public void shutDownPaintThread()
     {
-        executorService.shutdown();
         executorService.shutdownNow();
+
     }
     public void setNewRule(String rule)
     {
         shutDownPaintThread();
-        int size=getOptimalCellSize(point,false,choice);
+       // int size=getOptimalCellSize(point,false,choice);
         cellGrid=new OneDCellularAutomataGrid(point,rule,surfaceHolder);
-        cellGrid.setPixelSize(size);
+
         startThread();
     }
 
+    public void setNewFractalChaos(int i)
+    {
+        shutDownPaintThread();
+        if(i == 0) {
+            fractalandChaos=new Circles(point,surfaceHolder);
+        }
+        else if(i == 1) {
+            fractalandChaos=new RosslerAttractor(point,surfaceHolder);
+        }
+        else if(i == 2) {
+            fractalandChaos=new LorenzAttractor(point,surfaceHolder);
+        }
+        else {
+            fractalandChaos=new AizawaAttractor(point,surfaceHolder);
+        }
 
-    private void setNewGrid()
+        startThread();
+
+    }
+
+    private void setNewSurface()
     {
        if(Category.OneDCellularAutomata.ordinal() == choice)
        {
@@ -118,7 +140,7 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
        }
         else if(Category.Fractals.ordinal() == choice)
        {
-           fractal=new Circles(point,surfaceHolder);
+           fractalandChaos =new Circles(point,surfaceHolder);
        }
     }
 
