@@ -18,7 +18,7 @@ public class Options {
                     "Rule 222","Rule 222 (Chaotic)"
             };
 
-    public static final String[] fractalAndChaosOptions={"Circles","Rossler Attractor","Lorenz Attractor","Aizawa Attractor"};
+    public static final String[] fractalAndChaosOptions={"Circles","Barnsley Fern","Rossler Attractor","Lorenz Attractor","Aizawa Attractor"};
 
     public static final String[] gameOfLifeOptions={"No options available."};
 }

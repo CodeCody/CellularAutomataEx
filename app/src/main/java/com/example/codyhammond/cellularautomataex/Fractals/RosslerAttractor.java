@@ -20,7 +20,8 @@ public class RosslerAttractor extends FractalandChaos
 
     public RosslerAttractor(Point point, SurfaceHolder surfaceHolder)
    {
-      super(point,surfaceHolder);
+      super(point,surfaceHolder,1);
+
    }
 
     @Override
@@ -35,9 +36,15 @@ public class RosslerAttractor extends FractalandChaos
        paint();
     }
 
+    @Override
+    protected void restart()
+    {
+        draw();
+        paint();
+    }
+
     public void paint()
     {
-
         double xmin = 2000;
         double xmax = -1000;
         double ymin = 2000;

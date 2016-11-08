@@ -17,63 +17,73 @@ public class AizawaAttractor extends FractalandChaos {
     private double a = 0.95, b = 0.7, c = 0.6, d = 3.5, e = 0.25, f = 0.1,dt=.01;
     private double x=0.1,y=0,z=0;
     private int count=0;
-    private ExecutorService executors=Executors.newFixedThreadPool(2);
-    private CyclicBarrier cyclicBarrier;
-    private Runnable [] workRunnables;
-    private Runnable updateRunnable;
+
 
     public AizawaAttractor(Point point, SurfaceHolder surfaceHolder)
     {
-        super(point,surfaceHolder);
-        initRunnables();
-
-        cyclicBarrier=new CyclicBarrier(2,updateRunnable);
+        super(point,surfaceHolder,2);
+        initRepeatRunnable();
+        initWorkRunnables();
+        initActionRunnable();
+        initCyclicBarriers();
     }
 
-    private void initRunnables()
+    @Override
+    protected void restart()
     {
-        workRunnables=new Runnable[2];
+        initWorkRunnables();
+    }
 
-        workRunnables[0]=new Runnable() {
+    private void initWorkRunnables()
+    {
+        workerRunnables=new Runnable[workerThreadSize];
+
+        if(workerThreadSize !=2)
+            return;
+
+        workerRunnables[0]=new Runnable() {
             @Override
             public void run() {
-                for(int i=0; i < 10000; i++) {
+                for(int i=0; i < 12000; i++) {
                     if(Thread.currentThread().isInterrupted())
                         break;
 
                     BuffCanvas.drawCircle((int) (540 + 300 * x), (int) (500 + 500 * z), 1, paint);
-                    try {
-                        cyclicBarrier.await();
-                    } catch (BrokenBarrierException | InterruptedException e) {
-                    }
+                    drawBarrierAwait();
                 }
+                repeatBarrierAwait();
             }
         };
 
-        workRunnables[1]=new Runnable() {
+        workerRunnables[1]=new Runnable() {
             @Override
             public void run() {
-                for(int i=0; i < 10000; i++) {
+                for(int i=0; i < 12000; i++) {
 
                     if(Thread.currentThread().isInterrupted())
                         break;
 
                     BuffCanvas.drawCircle((int) (540 - 300 * x), (int) (500 + 500 * z), 1, paint);
-                    try {
-                        cyclicBarrier.await();
-                    } catch (BrokenBarrierException | InterruptedException be) {
-
-                    }
+                    drawBarrierAwait();
                 }
+                repeatBarrierAwait();
             }
         };
 
-        updateRunnable=new Runnable() {
+        executorService=Executors.newFixedThreadPool(workerThreadSize);
+    }
+
+
+
+    @Override
+    protected void initActionRunnable()
+    {
+        actionRunnable=new Runnable() {
             @Override
             public void run() {
                 updateSurface();
                 iterate();
-                cyclicBarrier.reset();
+                drawBarrier.reset();
             }
         };
     }
@@ -88,7 +98,7 @@ public class AizawaAttractor extends FractalandChaos {
         {
             if(Thread.currentThread().isInterrupted())
             {
-                executors.shutdownNow();
+                executorService.shutdownNow();
                 break;
             }
         }
@@ -97,10 +107,7 @@ public class AizawaAttractor extends FractalandChaos {
     @Override
     public void draw()
     {
-       for(Runnable r : workRunnables)
-       {
-           executors.execute(r);
-       }
+       startWorkers();
     }
 
     private void iterate()

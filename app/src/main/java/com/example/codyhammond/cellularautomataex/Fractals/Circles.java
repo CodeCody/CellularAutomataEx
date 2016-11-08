@@ -19,12 +19,6 @@ import java.util.concurrent.Executors;
 
 public class Circles extends FractalandChaos
 {
-    private SurfaceHolder surfaceHolder;
-    private int version=0;
-    private CyclicBarrier cyclicBarrier;
-    private Runnable updateSurfaceRunnable;
-    private LinkedList<Runnable> circleRunnables;
-    private ExecutorService executors;
     private int circleRadius=400;
     private int iterations=10;
     private int centerX=0;
@@ -33,109 +27,43 @@ public class Circles extends FractalandChaos
 
     public Circles(Point point, SurfaceHolder surfaceHolder)
     {
-        super(point,surfaceHolder);
+        super(point,surfaceHolder,4);
         this.surfaceHolder=surfaceHolder;
         paint.setStyle(Paint.Style.STROKE);
+        paint.setColor(Color.CYAN);
         centerX=screenDimen.x/2;
         centerY=screenDimen.y/2;
-        circleRunnables=new LinkedList<>();
-        setUpCircleRunnables();
-
-        updateSurfaceRunnable=new Runnable() {
-            @Override
-            public void run() {
-                updateSurface();
-                cyclicBarrier.reset();
-                Log.i("ActionRunnable","executed");
-            }
-        };
-
-            cyclicBarrier=new CyclicBarrier(4,updateSurfaceRunnable);
-
-
+        initAsyncUtil();
     }
 
-    public void setUpCircleRunnables()
+    private void initAsyncUtil()
     {
-        circleRunnables.add(new Runnable() {
-            @Override
-            public void run() {
-                drawTopLeftQuadrant(centerX, centerY, circleRadius,iterations-1);
-            }
-        });
-
-        circleRunnables.add(new Runnable() {
-            @Override
-            public void run() {
-               drawTopRightQuadrant(centerX,centerY,circleRadius,iterations-1);
-            }
-        });
-
-        circleRunnables.add(new Runnable() {
-            @Override
-            public void run() {
-                drawBottomLeftQuadrant(centerX,centerY,circleRadius,iterations-1);
-            }
-        });
-
-        circleRunnables.add(new Runnable() {
-            @Override
-            public void run() {
-                drawBottomRightQuadrant(centerX,centerY,circleRadius,iterations-1);
-            }
-        });
-
-        executors=Executors.newFixedThreadPool(4);
-
-
+        initWorkRunnables();
+        initRepeatRunnable();
+        initActionRunnable();
+        initCyclicBarriers();
     }
 
-
-    private void checkInterrupt()
-    {
-
-    }
 
 
     @Override
     public synchronized void run()
     {
-        updateSurface();
-
-        for(Runnable r : circleRunnables)
-        {
-            executors.execute(r);
-        }
+        startWorkers();
 
         while(true)
         {
             if(Thread.currentThread().isInterrupted())
             {
-                executors.shutdownNow();
+                executorService.shutdownNow();
             }
         }
-
-      /*  try {
-            while (!Thread.currentThread().isInterrupted()) {
-                draw();
-                updateSurface();
-            }
-        }
-        catch(NullPointerException  e)
-        {
-
-        } */
-
     }
 
-
-
-    @Override @SuppressWarnings("NewApi")
+    @Override
     public void draw()
     {
-       // BuffCanvas.drawCircle(screenDimen.x/2,screenDimen.y/2,400,paint);
-
-       // recurseCircle();
+        updateSurface();
     }
 
     private void drawTopLeftQuadrant(int x,int y,int radius,int countDown)
@@ -143,16 +71,12 @@ public class Circles extends FractalandChaos
         if(countDown!=1 && !Thread.currentThread().isInterrupted() && y <= centerY && y >= 0  && x <= centerX) {
             BuffCanvas.drawCircle(x, y, radius, paint);
 
-           try {
-                cyclicBarrier.await();
-            }
-            catch (InterruptedException  | BrokenBarrierException ie){}
+            drawBarrierAwait();
 
             drawTopLeftQuadrant(x,y - radius,radius/2,countDown-1);
             drawTopLeftQuadrant(x,y+radius,radius/2,countDown-1);
             drawTopLeftQuadrant(x+radius,y,radius/2,countDown-1);
             drawTopLeftQuadrant(x-radius,y,radius/2,countDown-1);
-
         }
     }
 
@@ -161,10 +85,8 @@ public class Circles extends FractalandChaos
         if(countDown!=1 && !Thread.currentThread().isInterrupted() && y <= centerY && y >= 0 && x >= centerX )
         {
             BuffCanvas.drawCircle(x, y, radius, paint);
-            try {
-                cyclicBarrier.await();
-            }
-            catch (InterruptedException  | BrokenBarrierException ie){}
+
+            drawBarrierAwait();
 
             drawTopRightQuadrant(x,y - radius,radius/2,countDown-1);
             drawTopRightQuadrant(x,y+radius,radius/2,countDown-1);
@@ -178,10 +100,8 @@ public class Circles extends FractalandChaos
     {
         if(countDown!=1 && !Thread.currentThread().isInterrupted() && y >= centerY  && x <=centerX) {
             BuffCanvas.drawCircle(x, y, radius, paint);
-            try {
-                cyclicBarrier.await();
-            }
-            catch (InterruptedException  | BrokenBarrierException ie){}
+
+            drawBarrierAwait();
 
             drawBottomLeftQuadrant(x,y + radius,radius/2,countDown-1);
             drawBottomLeftQuadrant(x,y - radius,radius/2,countDown-1);
@@ -194,10 +114,8 @@ public class Circles extends FractalandChaos
     {
         if(countDown!=1 && !Thread.currentThread().isInterrupted() && y >= centerY  && x >= centerX ) {
             BuffCanvas.drawCircle(x, y, radius, paint);
-            try {
-                cyclicBarrier.await();
-            }
-            catch (InterruptedException  | BrokenBarrierException ie){}
+
+            drawBarrierAwait();
 
             drawBottomRightQuadrant(x,y + radius,radius/2,countDown-1);
             drawBottomRightQuadrant(x,y - radius,radius/2,countDown-1);
@@ -207,28 +125,82 @@ public class Circles extends FractalandChaos
         }
     }
 
-    private void paintCircle(int i, int j,int CellStatus) {
-        Point p = new Point(i,j);
-        int x = p.x;
-        int y = p.y;
-        int color= Color.BLACK;
 
-        if(CellStatus==1)
-            color=Color.CYAN;
-
-        paint.setColor(color);
-        Rect rect = new Rect(
-                x * 20,
-                y * 20,
-                (x + 1) * 20,
-                (y + 1) * 20
-        );
-
-        BuffCanvas.drawRect(rect, paint);
-    }
-
-    static class CircleData
+    protected void initWorkRunnables()
     {
+        workerRunnables=new Runnable[workerThreadSize];
 
+        workerRunnables[0]=new Runnable() {
+            @Override
+            public void run() {
+                drawTopLeftQuadrant(centerX, centerY, circleRadius,iterations-1);
+                repeatBarrierAwait();
+            }
+        };
+
+        workerRunnables[1]=new Runnable() {
+            @Override
+            public void run() {
+                drawTopRightQuadrant(centerX,centerY,circleRadius,iterations-1);
+                repeatBarrierAwait();
+            }
+        };
+
+        workerRunnables[2]=new Runnable() {
+            @Override
+            public void run() {
+                drawBottomLeftQuadrant(centerX,centerY,circleRadius,iterations-1);
+                repeatBarrierAwait();
+            }
+        };
+
+        workerRunnables[3]=new Runnable() {
+            @Override
+            public void run() {
+                drawBottomRightQuadrant(centerX,centerY,circleRadius,iterations-1);
+                repeatBarrierAwait();
+            }
+        };
+
+        executorService = Executors.newFixedThreadPool(workerThreadSize);
     }
+
+    @Override
+    protected void initActionRunnable()
+    {
+        actionRunnable=new Runnable() {
+            @Override
+            public void run() {
+                draw();
+                drawBarrier.reset();
+            }
+        };
+    }
+
+    @Override
+    protected void restart()
+    {
+        initWorkRunnables();
+    }
+
+    protected void initRepeatRunnable()
+    {
+        restartRunnable=new Runnable() {
+            @Override
+            public synchronized void run() {
+
+                repeatBarrier.reset();
+
+                try {
+                    wait(5000);
+                } catch (InterruptedException ie){}
+                restart();
+                paintBackground();
+                startWorkers();
+            }
+        };
+    }
+
+
+
 }

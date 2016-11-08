@@ -9,6 +9,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.example.codyhammond.cellularautomataex.Fractals.AizawaAttractor;
+import com.example.codyhammond.cellularautomataex.Fractals.BarnsleyFern;
 import com.example.codyhammond.cellularautomataex.Fractals.Circles;
 import com.example.codyhammond.cellularautomataex.Fractals.FractalandChaos;
 import com.example.codyhammond.cellularautomataex.Fractals.LorenzAttractor;
@@ -29,7 +30,7 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     private ExecutorService executorService=null;
    // private PaintThread paintThread;
     private Point point;
-    private int choice=0;
+    private int choice=2;
     private Grid cellGrid;
     private FractalandChaos fractalandChaos;
     private SurfaceHolder surfaceHolder;
@@ -114,10 +115,14 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
         if(i == 0) {
             fractalandChaos=new Circles(point,surfaceHolder);
         }
-        else if(i == 1) {
-            fractalandChaos=new RosslerAttractor(point,surfaceHolder);
+        else if(i == 1)
+        {
+            fractalandChaos=new BarnsleyFern(point,surfaceHolder);
         }
         else if(i == 2) {
+            fractalandChaos=new RosslerAttractor(point,surfaceHolder);
+        }
+        else if(i == 3) {
             fractalandChaos=new LorenzAttractor(point,surfaceHolder);
         }
         else {
@@ -132,7 +137,7 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     {
        if(Category.OneDCellularAutomata.ordinal() == choice)
        {
-          cellGrid=new OneDCellularAutomataGrid(point,surfaceHolder);
+           cellGrid=new OneDCellularAutomataGrid(point,surfaceHolder);
        }
         else if(Category.GameOfLife.ordinal() == choice)
        {
@@ -144,31 +149,6 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
        }
     }
 
-
-    public int getOptimalCellSize(Point displaySize, boolean isLandscape,int i) {
-        int cellSize = 1;
-        int limitX = 160;
-        int limitY = 200;
-
-        if (isLandscape) {
-            int temp = limitX;
-            limitX = limitY;
-            limitY = temp;
-        }
-
-        while (displaySize.x / cellSize > limitX || displaySize.y / cellSize > limitY) {
-            cellSize++;
-        }
-
-        if(i==0)
-        return cellSize/2;
-        else
-            return cellSize;
-    }
-    public void clearGrid()
-    {
-
-    }
     @Override
     public void surfaceChanged(SurfaceHolder holder,int format,int width,int height)
     {
