@@ -146,7 +146,12 @@ public class MainActivity extends AppCompatActivity  {
 
     }
 
-
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        automatonView.shutDownPaintThread();
+    }
     class CategoryAdapter extends ArrayAdapter<String>
     {
         public CategoryAdapter(Context context,int id,String [] list)

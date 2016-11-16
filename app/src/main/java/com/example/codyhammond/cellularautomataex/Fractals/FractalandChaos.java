@@ -11,6 +11,8 @@ import android.view.SurfaceHolder;
 
 import com.example.codyhammond.cellularautomataex.PaintRunnable;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
@@ -34,6 +36,7 @@ import java.util.concurrent.Executors;
     protected final int workerThreadSize;
     protected Runnable restartRunnable;
     protected Runnable[]workerRunnables;
+    protected Timer restartTimer;
 
     public FractalandChaos(Point point, SurfaceHolder surfaceHolder,int workerThreadSize)
     {
@@ -47,6 +50,8 @@ import java.util.concurrent.Executors;
         buffCanvasBitmap=Bitmap.createBitmap(point.x,point.y,Bitmap.Config.ARGB_8888);
         BuffCanvas.setBitmap(buffCanvasBitmap);
         paintBackground();
+        restartTimer=new Timer();
+
 
 
     }
@@ -103,11 +108,13 @@ import java.util.concurrent.Executors;
 
                 repeatBarrier.reset();
                 restart();
-                try {
-                    wait(5000);
-                } catch (InterruptedException ie){}
-                paintBackground();
-                startWorkers();
+                restartTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        paintBackground();
+                        startWorkers();
+                    }
+                },5000L);
             }
         };
     }
@@ -117,15 +124,16 @@ import java.util.concurrent.Executors;
     {
         try {
             drawBarrier.await();
+
         }
         catch (InterruptedException ie){
             String msg= ie.getMessage() == null ? "null" : ie.getLocalizedMessage();
-            Log.e("drawBarrier",msg);
+         //   Log.e("drawBarrier",msg);
         }
         catch (BrokenBarrierException ie)
         {
             String msg= ie.getMessage() == null ? "null" : ie.getLocalizedMessage();
-            Log.e("Broken",msg);
+         //   Log.e("Broken",msg);
         }
     }
     protected void repeatBarrierAwait()
@@ -135,7 +143,7 @@ import java.util.concurrent.Executors;
         }
         catch (InterruptedException | BrokenBarrierException be){
             String msg= be.getMessage() == null ? "null" : be.getMessage();
-            Log.e("repeatBarrier",msg);
+         //   Log.e("repeatBarrier",msg);
         }
     }
 

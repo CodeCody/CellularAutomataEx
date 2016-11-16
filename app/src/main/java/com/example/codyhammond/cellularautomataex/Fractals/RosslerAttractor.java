@@ -21,7 +21,6 @@ public class RosslerAttractor extends FractalandChaos
     public RosslerAttractor(Point point, SurfaceHolder surfaceHolder)
    {
       super(point,surfaceHolder,1);
-
    }
 
     @Override
@@ -39,7 +38,7 @@ public class RosslerAttractor extends FractalandChaos
     @Override
     protected void restart()
     {
-        draw();
+        paintBackground();
         paint();
     }
 
@@ -55,7 +54,7 @@ public class RosslerAttractor extends FractalandChaos
         double xfac = 1000;
         double yfac = 1000;
         double fn[] = new double[3];
-        for (int i = 0; i < 50000; i++) {
+        for (int i = 0; i < 20000; i++) {
             f(xn, yn, zn, fn);
             double xn0 = xn;
             double yn0 = yn;
@@ -96,6 +95,7 @@ public class RosslerAttractor extends FractalandChaos
                 updateSurface();
             }
         }
+        restart();
     }
 
     void f(double xn, double yn, double zn, double[] fn)

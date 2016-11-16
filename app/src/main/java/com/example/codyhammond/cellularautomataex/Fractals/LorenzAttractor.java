@@ -61,13 +61,15 @@ public class LorenzAttractor extends FractalandChaos
 
 
     @Override
-    public void run() {
+    public  void run() {
         startWorkers();
 
         while(true)
         {
             if(Thread.currentThread().isInterrupted()) {
+                restartTimer.cancel();
                 executorService.shutdownNow();
+
                 break;
             }
         }

@@ -30,7 +30,8 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     private ExecutorService executorService=null;
    // private PaintThread paintThread;
     private Point point;
-    private int choice=2;
+    private int category_choice=0;
+    private int fractalChaosChoice=0;
     private Grid cellGrid;
     private FractalandChaos fractalandChaos;
     private SurfaceHolder surfaceHolder;
@@ -71,10 +72,10 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     public void startThread()
     {
         executorService = Executors.newSingleThreadExecutor();
-        if(choice == 0) {
+        if(category_choice == 0) {
             executorService.execute((OneDCellularAutomataGrid)cellGrid);
         }
-        else if(choice == 1 )
+        else if(category_choice == 1 )
         {
             executorService.execute((GameOfLifeGrid)cellGrid);
         }
@@ -86,11 +87,11 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
 
     public void setNewSurfaceMode(int selection)
     {
-        if(selection == choice)
+        if(selection == category_choice)
             return;
 
         shutDownPaintThread();
-        choice=selection;
+        category_choice=selection;
         setNewSurface();
         startThread();
     }
@@ -98,7 +99,6 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     public void shutDownPaintThread()
     {
         executorService.shutdownNow();
-
     }
     public void setNewRule(String rule)
     {
@@ -111,41 +111,47 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
 
     public void setNewFractalChaos(int i)
     {
+        fractalChaosChoice=i;
         shutDownPaintThread();
-        if(i == 0) {
+        setFractalChaosSelection();
+        startThread();
+
+    }
+
+    private void setFractalChaosSelection()
+    {
+        if(fractalChaosChoice == 0) {
             fractalandChaos=new Circles(point,surfaceHolder);
         }
-        else if(i == 1)
+        else if(fractalChaosChoice == 1)
         {
             fractalandChaos=new BarnsleyFern(point,surfaceHolder);
         }
-        else if(i == 2) {
+        else if(fractalChaosChoice == 2) {
             fractalandChaos=new RosslerAttractor(point,surfaceHolder);
         }
-        else if(i == 3) {
+        else if(fractalChaosChoice == 3) {
             fractalandChaos=new LorenzAttractor(point,surfaceHolder);
         }
         else {
             fractalandChaos=new AizawaAttractor(point,surfaceHolder);
         }
 
-        startThread();
-
     }
 
     private void setNewSurface()
     {
-       if(Category.OneDCellularAutomata.ordinal() == choice)
+       if(Category.OneDCellularAutomata.ordinal() == category_choice)
        {
            cellGrid=new OneDCellularAutomataGrid(point,surfaceHolder);
        }
-        else if(Category.GameOfLife.ordinal() == choice)
+        else if(Category.GameOfLife.ordinal() == category_choice)
        {
            cellGrid=new GameOfLifeGrid(point,surfaceHolder);
        }
-        else if(Category.Fractals.ordinal() == choice)
+        else if(Category.Fractals.ordinal() == category_choice)
        {
-           fractalandChaos =new Circles(point,surfaceHolder);
+           setFractalChaosSelection();
        }
     }
 
@@ -158,7 +164,8 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
-
+       Log.i("surfaceDetroyed","destroyed");
+  //      shutDownPaintThread();
     }
 
     @Override

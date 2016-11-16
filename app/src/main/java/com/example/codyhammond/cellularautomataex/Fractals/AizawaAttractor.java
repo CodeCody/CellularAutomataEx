@@ -14,14 +14,13 @@ import java.util.concurrent.Executors;
 
 public class AizawaAttractor extends FractalandChaos {
 
-    private double a = 0.95, b = 0.7, c = 0.6, d = 3.5, e = 0.25, f = 0.1,dt=.01;
-    private double x=0.1,y=0,z=0;
-    private int count=0;
+    private double a = 0.95, b = 0.7, c = 0.6, d = 3.5, e = 0.25, f = 0.1, dt = .01;
+    private double x, y, z;
+    private int count = 0;
 
 
-    public AizawaAttractor(Point point, SurfaceHolder surfaceHolder)
-    {
-        super(point,surfaceHolder,2);
+    public AizawaAttractor(Point point, SurfaceHolder surfaceHolder) {
+        super(point, surfaceHolder, 2);
         initRepeatRunnable();
         initWorkRunnables();
         initActionRunnable();
@@ -29,13 +28,17 @@ public class AizawaAttractor extends FractalandChaos {
     }
 
     @Override
-    protected void restart()
-    {
+    protected void restart() {
         initWorkRunnables();
     }
 
+    private void setStartValues()
+    {
+        x = 0.1; y = 0; z = 0;
+    }
     private void initWorkRunnables()
     {
+        setStartValues();
         workerRunnables=new Runnable[workerThreadSize];
 
         if(workerThreadSize !=2)

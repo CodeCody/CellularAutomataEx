@@ -15,23 +15,14 @@ import java.util.concurrent.Executors;
 
 public class BarnsleyFern extends FractalandChaos {
 
-    private CyclicBarrier drawBarrier;
-    private CyclicBarrier repeatBarrier;
-    private ExecutorService executorService;
-    private Runnable actionRunnable;
-    private final int workerThreadSize=20;
-    private Runnable restartRunnable;
 
-    private Runnable[]workerRunnable;
     public BarnsleyFern(Point point, SurfaceHolder holder)
     {
         super(point,holder,20);
         initWorkRunnables();
         initActionRunnable();
         initRepeatRunnable();
-
-        drawBarrier=new CyclicBarrier(workerThreadSize,actionRunnable);
-        repeatBarrier=new CyclicBarrier(workerThreadSize,restartRunnable);
+        initCyclicBarriers();
     }
 
 
@@ -39,11 +30,11 @@ public class BarnsleyFern extends FractalandChaos {
 
     private void initWorkRunnables()
     {
-        workerRunnable=new Runnable[workerThreadSize];
+        workerRunnables=new Runnable[workerThreadSize];
 
-        for(int i=0; i < workerRunnable.length; i++)
+        for(int i=0; i < workerRunnables.length; i++)
         {
-            workerRunnable[i]=new Runnable() {
+            workerRunnables[i]=new Runnable() {
                 @Override
                 public void run() {
                     draw();
@@ -64,6 +55,7 @@ public class BarnsleyFern extends FractalandChaos {
         {
             if(Thread.currentThread().isInterrupted())
             {
+                restartTimer.cancel();
                 executorService.shutdownNow();
                 return;
             }

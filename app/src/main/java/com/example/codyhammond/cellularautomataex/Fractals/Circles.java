@@ -55,6 +55,7 @@ public class Circles extends FractalandChaos
         {
             if(Thread.currentThread().isInterrupted())
             {
+                restartTimer.cancel();
                 executorService.shutdownNow();
             }
         }
