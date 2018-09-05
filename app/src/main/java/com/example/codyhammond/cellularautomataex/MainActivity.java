@@ -1,6 +1,7 @@
 package com.example.codyhammond.cellularautomataex;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.support.annotation.NonNull;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity  {
     private Toolbar toolbar;
     private TextView categoryTitle,subCategoryTitle;
     private ImageButton menu_drawer;
+    private Resources resources;
     private ImageButton optionsButton;
     private int currentSelection=0;
     private final String[] categories={"1D Cellular Automata","Game Of Life","Fractals And Chaos"};
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity  {
         drawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
         categoryListView=(ListView)findViewById(R.id.category_list);
         optionsListView=(ListView)findViewById(R.id.optionsList);
+       // getResources().getDisplayMetrics().
 
         optionsListView.setAdapter(new OptionsAdapter(this,R.layout.options_list_item, ruleSetNames));
 
@@ -85,19 +88,29 @@ public class MainActivity extends AppCompatActivity  {
         categoryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                     automatonView.setNewSurfaceMode(i);
+
                 if( i == 0) {
                     optionsListView.setAdapter(new OptionsAdapter(getApplicationContext(), R.layout.options_list_item, Options.ruleSetNames));
-                    subCategoryTitle.setText(ruleSetNames[0]);
+                    if(automatonView.getCategory_choice() != i) {
+
+                        subCategoryTitle.setText(ruleSetNames[4]);
+                        subCategoryTitle.setVisibility(View.VISIBLE);
+                    }
                 }
                 else if( i == 1) {
+
                     optionsListView.setAdapter(new OptionsAdapter(getApplicationContext(), R.layout.options_list_item, Options.gameOfLifeOptions));
                     subCategoryTitle.setVisibility(View.GONE);
                 }
                 else {
                     optionsListView.setAdapter(new OptionsAdapter(getApplicationContext(), R.layout.options_list_item, Options.fractalAndChaosOptions));
-                    subCategoryTitle.setText(fractalAndChaosOptions[0]);
+                    if(automatonView.getCategory_choice() != i) {
+
+                        subCategoryTitle.setText(fractalAndChaosOptions[0]);
+                        subCategoryTitle.setVisibility(View.VISIBLE);
+                    }
                 }
+                automatonView.setNewSurfaceMode(i);
                 drawerLayout.closeDrawer(GravityCompat.START,true);
                 categoryTitle.setText(categories[i]);
             }
@@ -152,6 +165,7 @@ public class MainActivity extends AppCompatActivity  {
         super.onPause();
         automatonView.shutDownPaintThread();
     }
+
     class CategoryAdapter extends ArrayAdapter<String>
     {
         public CategoryAdapter(Context context,int id,String [] list)

@@ -40,6 +40,8 @@ public class AizawaAttractor extends FractalandChaos {
     {
         setStartValues();
         workerRunnables=new Runnable[workerThreadSize];
+        final int startX=screenDimen.x/2;
+        final int startZ=screenDimen.y/2;
 
         if(workerThreadSize !=2)
             return;
@@ -51,7 +53,7 @@ public class AizawaAttractor extends FractalandChaos {
                     if(Thread.currentThread().isInterrupted())
                         break;
 
-                    BuffCanvas.drawCircle((int) (540 + 300 * x), (int) (500 + 500 * z), 1, paint);
+                    BuffCanvas.drawCircle((int) (startX + 300 * x), (int) (startZ-(startZ/2) + 500 * z), 1, paint);
                     drawBarrierAwait();
                 }
                 repeatBarrierAwait();
@@ -66,7 +68,7 @@ public class AizawaAttractor extends FractalandChaos {
                     if(Thread.currentThread().isInterrupted())
                         break;
 
-                    BuffCanvas.drawCircle((int) (540 - 300 * x), (int) (500 + 500 * z), 1, paint);
+                    BuffCanvas.drawCircle((int) (startX - 300 * x), (int) (startZ-(startZ/2) + 500 * z), 1, paint);
                     drawBarrierAwait();
                 }
                 repeatBarrierAwait();

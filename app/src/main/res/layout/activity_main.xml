@@ -13,12 +13,12 @@
 
     <ListView
     android:layout_width="wrap_content"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:id="@+id/category_list"
         android:divider="@android:color/white"
         android:dividerHeight="2dp"
     android:layout_gravity="start"
-        android:foreground="@android:color/white">
+        android:background="@color/drawerBackground">
   </ListView>
 
 </android.support.v4.widget.DrawerLayout>

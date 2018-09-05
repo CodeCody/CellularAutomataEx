@@ -5,6 +5,7 @@ import android.graphics.Point;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Display;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -65,8 +66,12 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
         display.getSize(point);
         setNewSurface();
         startThread();
+    }
 
-       // paintThread.start();
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+      //  startThread();
     }
 
     public void startThread()
@@ -96,6 +101,28 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
         startThread();
     }
 
+    public int getCategory_choice() {
+        return category_choice;
+    }
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        if(cellGrid instanceof GameOfLifeGrid) {
+
+            int activePointerID=event.getPointerId(0);
+
+            int pointerIndex=event.findPointerIndex(activePointerID);
+            float x = event.getX(pointerIndex);
+            float y = event.getY(pointerIndex);
+
+            ((GameOfLifeGrid) cellGrid).touchModify(x,y);
+
+            return true;
+        }
+
+        return false;
+    }
+
     public void shutDownPaintThread()
     {
         executorService.shutdownNow();
@@ -103,9 +130,7 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     public void setNewRule(String rule)
     {
         shutDownPaintThread();
-       // int size=getOptimalCellSize(point,false,choice);
         cellGrid=new OneDCellularAutomataGrid(point,rule,surfaceHolder);
-
         startThread();
     }
 
@@ -158,7 +183,9 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void surfaceChanged(SurfaceHolder holder,int format,int width,int height)
     {
-
+          setNewSurface();
+        shutDownPaintThread();
+        startThread();
     }
 
     @Override
@@ -172,6 +199,7 @@ public class AutomatonView extends SurfaceView implements SurfaceHolder.Callback
     public void onDetachedFromWindow()
     {
         super.onDetachedFromWindow();
+        Log.i("windowDetached","TRUE");
         shutDownPaintThread();
     }
 

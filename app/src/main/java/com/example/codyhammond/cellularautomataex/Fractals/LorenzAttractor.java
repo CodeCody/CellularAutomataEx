@@ -90,7 +90,7 @@ public class LorenzAttractor extends FractalandChaos
             if(Thread.currentThread().isInterrupted())
                 break;
 
-            BuffCanvas.drawCircle((int)(540 + 20*x0),(int)(400 + 20*z0),15,paint);
+            BuffCanvas.drawCircle((int)((screenDimen.x/2) + 20*x0),(int)(400 + 20*z0),15,paint);
             updateSurface();
             iterate();
         }

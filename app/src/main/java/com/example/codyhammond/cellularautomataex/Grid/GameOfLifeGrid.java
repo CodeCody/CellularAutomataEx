@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.example.codyhammond.cellularautomataex.CellStateChange;
@@ -13,6 +14,7 @@ import com.example.codyhammond.cellularautomataex.PaintRunnable;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by codyhammond on 10/13/16.
@@ -20,7 +22,8 @@ import java.util.List;
 
 public class GameOfLifeGrid implements PaintRunnable,Grid {
 
-    private List<CellStateChange>cellStateChanges;
+    //private List<CellStateChange>cellStateChanges;
+    private ConcurrentLinkedQueue<CellStateChange>cellStateChanges;
     private SurfaceHolder surfaceHolder;
     private Canvas BuffCanvas;
     private Bitmap buffCanvasBitmap;
@@ -33,7 +36,7 @@ public class GameOfLifeGrid implements PaintRunnable,Grid {
         cellSizeinPixels=getOptimalCellSize(point);
         grid=new int[point.y/cellSizeinPixels][point.x/cellSizeinPixels];
         screenDimen=point;
-        cellStateChanges=new LinkedList<>();
+        cellStateChanges=new ConcurrentLinkedQueue<>();
         this.surfaceHolder=surfaceHolder;
         initCanvas();
         setStartPattern();
@@ -55,14 +58,23 @@ public class GameOfLifeGrid implements PaintRunnable,Grid {
         int limitY = 200;
 
 
-
         while (displaySize.x / cellSize > limitX || displaySize.y / cellSize > limitY) {
             cellSize++;
         }
 
 
-
         return cellSize;
+    }
+
+    public void touchModify(float pointX, float pointY) {
+
+        int cellpointCol=(int)pointX/cellSizeinPixels;
+        int cellpointRow=(int)pointY/cellSizeinPixels;
+
+        grid[cellpointRow][cellpointCol]=1;
+        cellStateChanges.add(new CellStateChange(cellpointRow,cellpointCol,1));
+
+        Log.i("Touch",String.valueOf(cellpointRow)+' '+String.valueOf(cellpointCol));
     }
 
     @Override
@@ -197,7 +209,7 @@ public class GameOfLifeGrid implements PaintRunnable,Grid {
         grid=next;
     }
 
-    public List<CellStateChange> getCellStateChanges()
+    public ConcurrentLinkedQueue<CellStateChange> getCellStateChanges()
     {
         return cellStateChanges;
     }
